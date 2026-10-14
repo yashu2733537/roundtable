@@ -1,0 +1,10 @@
+[workspace]
+members = ["src-tauri", "crates/roundtable-core"]
+resolver = "2"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
+panic = "abort"

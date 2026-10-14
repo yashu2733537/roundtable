@@ -1,0 +1,97 @@
+/* Roundtable design tokens.
+   One source of truth for color, spacing, radius, and type.
+   Light is the default; [data-theme="dark"] overrides the color tokens. */
+
+:root {
+  /* Type */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-md: 0.875rem; /* 14px — base UI size */
+  --text-lg: 1rem; /* 16px */
+  --text-xl: 1.125rem; /* 18px */
+  --text-2xl: 1.375rem; /* 22px */
+  --text-3xl: 1.75rem; /* 28px */
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Spacing — 8px grid (space-0_5 is a half-step for icon alignment only) */
+  --space-0_5: 0.25rem; /* 4px */
+  --space-1: 0.5rem; /* 8px */
+  --space-2: 1rem; /* 16px */
+  --space-3: 1.5rem; /* 24px */
+  --space-4: 2rem; /* 32px */
+  --space-5: 2.5rem; /* 40px */
+  --space-6: 3rem; /* 48px */
+  --space-8: 4rem; /* 64px */
+
+  /* Radius — consistent 8–12px */
+  --radius: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  /* Borders + shadow */
+  --border-width: 1px;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 6px 24px rgb(0 0 0 / 0.14);
+
+  /* Layout */
+  --sidebar-width: 17rem; /* 272px */
+  --inspector-width: 20rem; /* 320px */
+  --bottom-nav-height: 3.5rem; /* 56px */
+
+  /* Motion */
+  --transition-fast: 120ms ease;
+  --transition-base: 180ms ease;
+
+  /* Light theme colors (default) */
+  --color-bg: #ffffff;
+  --color-bg-subtle: #f1f3f6;
+  --color-surface: #f7f8fa;
+  --color-surface-raised: #ffffff;
+  --color-border: #e3e6ec;
+  --color-border-strong: #c9ced8;
+  --color-text: #15171c;
+  --color-text-muted: #5a616e;
+  --color-accent: #2c5fd0;
+  --color-accent-solid: #2c5fd0;
+  --color-accent-solid-hover: #2450b8;
+  --color-on-accent: #ffffff;
+  --color-accent-subtle: #eaf0fd;
+  --color-danger: #c2382b;
+  --color-success: #1b7a44;
+  --color-warning: #8a5a00;
+  --color-focus: #2c5fd0;
+  --color-backdrop: rgb(15 18 24 / 0.45);
+}
+
+[data-theme="dark"] {
+  --color-bg: #14161b;
+  --color-bg-subtle: #171a20;
+  --color-surface: #1b1e25;
+  --color-surface-raised: #20242c;
+  --color-border: #2c313a;
+  --color-border-strong: #3d434f;
+  --color-text: #e9ebef;
+  --color-text-muted: #9aa3b2;
+  --color-accent: #85a8f8;
+  --color-accent-solid: #3f6fe0;
+  --color-accent-solid-hover: #4d7cea;
+  --color-on-accent: #ffffff;
+  --color-accent-subtle: #1d2740;
+  --color-danger: #f08a80;
+  --color-success: #6fce9a;
+  --color-warning: #e0b062;
+  --color-focus: #85a8f8;
+  --color-backdrop: rgb(0 0 0 / 0.55);
+}
