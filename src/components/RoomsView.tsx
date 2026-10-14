@@ -251,12 +251,23 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
       } else if (event.type === "message") {
         const msg = event.message;
         setMessages((prev) => {
-          // Drop optimistic user rows once the backend echoes them.
+          // Drop the single oldest optimistic user row matching this echo.
+          // (Older code dropped every temp with the same text, so sending
+          // the same message twice flickered.)
+          let dropped = false;
           const withoutTemps =
             msg.sender === "user"
-              ? prev.filter(
-                  (m) => !(m.id.startsWith("temp-") && m.content === msg.content),
-                )
+              ? prev.filter((m) => {
+                  if (
+                    !dropped &&
+                    m.id.startsWith("temp-") &&
+                    m.content === msg.content
+                  ) {
+                    dropped = true;
+                    return false;
+                  }
+                  return true;
+                })
               : prev;
           if (withoutTemps.some((m) => m.id === msg.id)) {
             return withoutTemps.map((m) => (m.id === msg.id ? msg : m));
@@ -283,9 +294,25 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
           }
           if (target < 0) return prev;
           const row = prev[target];
-          if (row.tool_calls.some((c) => c.id === event.call.id)) return prev;
+          // The backend emits the requesting message first with pending
+          // (id-less) calls, then live calls with real ids. Replace a
+          // matching pending entry instead of appending a duplicate.
+          const pendingIdx = row.tool_calls.findIndex(
+            (c) =>
+              c.id === event.call.id ||
+              (c.id === "" && c.tool === event.call.tool),
+          );
+          if (pendingIdx >= 0 && row.tool_calls[pendingIdx].id === event.call.id) {
+            return prev;
+          }
+          const nextCalls = [...row.tool_calls];
+          if (pendingIdx >= 0) {
+            nextCalls[pendingIdx] = event.call;
+          } else {
+            nextCalls.push(event.call);
+          }
           const next = [...prev];
-          next[target] = { ...row, tool_calls: [...row.tool_calls, event.call] };
+          next[target] = { ...row, tool_calls: nextCalls };
           return next;
         });
       } else if (event.type === "tool_result") {
@@ -1059,8 +1086,11 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
                           <p className="msg__text">{msg.content}</p>
                           {msg.tool_calls.length > 0 && (
                             <div className="room-tools">
-                              {msg.tool_calls.map((call) => (
-                                <details key={call.id} className="room-tool">
+                              {msg.tool_calls.map((call, index) => (
+                                <details
+                                  key={call.id === "" ? `pending-${index}` : call.id}
+                                  className="room-tool"
+                                >
                                   <summary>
                                     {call.tool}
                                     {call.result == null ? " (running…)" : ""}

@@ -230,7 +230,7 @@ mod tests {
     #[test]
     fn templates_parse_and_draft() {
         let templates = agent_templates();
-        assert_eq!(templates.len(), 6);
+        assert_eq!(templates.len(), 13);
         for template in &templates {
             assert!(!template.system_prompt.trim().is_empty());
             let draft = template.draft();

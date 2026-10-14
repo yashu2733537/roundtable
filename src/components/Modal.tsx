@@ -46,9 +46,10 @@ export default function Modal({
     if (event.key !== "Tab") return;
     const dialog = dialogRef.current;
     if (!dialog) return;
+    // offsetParent is null for top-layer <dialog> content, so use rects.
     const focusable = Array.from(
       dialog.querySelectorAll<HTMLElement>(FOCUSABLE),
-    ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
+    ).filter((el) => !el.hasAttribute("disabled") && el.getClientRects().length > 0);
     if (focusable.length === 0) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];

@@ -42,6 +42,19 @@ const THEME_OPTIONS: Array<{ value: ThemeChoice; label: string }> = [
 
 type Busy = "idle" | "save" | "test" | "data";
 
+/// One-click starters for OpenAI-compatible endpoints. Anthropic speaks a
+/// different protocol and gets its own adapter + preset (not this list).
+const PRESETS: Array<{ name: string; base: string }> = [
+  { name: "OpenAI", base: "https://api.openai.com/v1" },
+  { name: "Google", base: "https://generativelanguage.googleapis.com/v1beta/openai/" },
+  { name: "DeepSeek", base: "https://api.deepseek.com/v1" },
+  { name: "OpenRouter", base: "https://openrouter.ai/api/v1" },
+  { name: "Together", base: "https://api.together.xyz/v1" },
+  { name: "Groq", base: "https://api.groq.com/openai/v1" },
+  { name: "Mistral", base: "https://api.mistral.ai/v1" },
+  { name: "xAI", base: "https://api.x.ai/v1" },
+];
+
 export default function SettingsDialog({
   open,
   onClose,
@@ -366,6 +379,38 @@ export default function SettingsDialog({
           <p className="settings__ok" role="status">
             {testResult}
           </p>
+        )}
+
+        {!editingId && (
+          <div className="provider-presets">
+            <span className="settings__label" id="preset-label">
+              Start from a preset:
+            </span>
+            <ul className="chip-list" aria-labelledby="preset-label">
+              {PRESETS.map((preset) => (
+                <li key={preset.name}>
+                  <button
+                    type="button"
+                    className="btn btn--sm"
+                    title={preset.base}
+                    onClick={() => {
+                      setEditingId(null);
+                      setFormName(preset.name);
+                      setFormBase(preset.base);
+                      setFormKey("");
+                      setFormError(null);
+                    }}
+                  >
+                    {preset.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="settings__hint">
+              Presets fill in the endpoint — you still add your own API key.
+              Anthropic needs its own adapter and arrives separately.
+            </p>
+          </div>
         )}
 
         {editingId ? (

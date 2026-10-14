@@ -939,6 +939,15 @@ a:focus-visible {
   gap: var(--space-0_5);
 }
 
+.provider-presets {
+  margin: var(--space-1) 0;
+}
+
+.provider-presets .settings__label {
+  display: block;
+  margin-bottom: var(--space-0_5);
+}
+
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {

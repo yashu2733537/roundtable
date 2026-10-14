@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
 import EmptyState from "./EmptyState";
 import ModelPicker from "./ModelPicker";
@@ -102,6 +102,7 @@ export function AgentAvatar({
       className="avatar"
       style={{
         backgroundColor: agent.avatar_color,
+        color: avatarTextColor(agent.avatar_color),
         width: size,
         height: size,
         fontSize: Math.round(size * 0.45),
@@ -111,6 +112,23 @@ export function AgentAvatar({
       {icon}
     </span>
   );
+}
+
+/**
+ * Readable text over a user-chosen avatar background. Light brand colors
+ * (yellows, pale greens) need dark text; saturated colors keep white.
+ */
+export function avatarTextColor(background: string): string {
+  const match = /^#([0-9a-fA-F]{6})$/.exec(background.trim());
+  if (!match || match[1] == null) return "#ffffff";
+  const hex = match[1];
+  const channel = (offset: number): number => {
+    const v = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  const luminance =
+    0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+  return luminance > 0.45 ? "#1b1e25" : "#ffffff";
 }
 
 interface TestTurn {
@@ -313,9 +331,12 @@ export default function AgentsPage({
     }
   };
 
-  // The Done handler above closes over a stale draft; mirror it in a ref.
+  // The Done handler above closes over a stale draft; mirror it in a ref
+  // (synced in an effect so StrictMode double-render stays consistent).
   const testDraftRef = useRef("");
-  testDraftRef.current = testDraft;
+  useEffect(() => {
+    testDraftRef.current = testDraft;
+  }, [testDraft]);
 
   const stopTest = () => {
     if (testStreamId) void cancelChat(testStreamId).catch(() => undefined);
@@ -529,21 +550,28 @@ export default function AgentsPage({
           <section className="card" aria-labelledby="templates-heading">
             <h3 className="card__title" id="templates-heading">
               Start from a template
+              {templates.length > 0 && (
+                <span className="muted"> · {templates.length}</span>
+              )}
             </h3>
-            <ul className="chip-list">
-              {templates.map((template) => (
-                <li key={template.key}>
-                  <button
-                    type="button"
-                    className="btn btn--sm"
-                    title={template.role}
-                    onClick={() => startCreate(draftFromTemplate(template))}
-                  >
-                    {template.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            {templates.length === 0 ? (
+              <p className="muted">No templates available.</p>
+            ) : (
+              <ul className="chip-list">
+                {templates.map((template) => (
+                  <li key={template.key}>
+                    <button
+                      type="button"
+                      className="btn btn--sm"
+                      title={template.role}
+                      onClick={() => startCreate(draftFromTemplate(template))}
+                    >
+                      {template.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
         )}
 

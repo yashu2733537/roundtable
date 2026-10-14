@@ -48,7 +48,7 @@ fn open_store(state: &AppState) -> Result<roundtable_core::KbStore, String> {
     Ok(store)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub fn app_info(app: tauri::AppHandle) -> roundtable_core::AppInfo {
     let package = app.package_info();
     roundtable_core::app_info(package.name.clone(), package.version.to_string())
@@ -97,7 +97,7 @@ fn resolve_provider(
     Ok((provider.base_url, key))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn providers_list(
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<ProviderInfo>, String> {
@@ -118,7 +118,7 @@ pub struct ProviderInput {
     pub key: Option<String>,
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn providers_add(
     state: tauri::State<'_, AppState>,
     input: ProviderInput,
@@ -136,7 +136,7 @@ pub async fn providers_add(
     Ok(ProviderInfo::of(&provider, secrets::has_key(&provider.id)?))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn providers_update(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -152,7 +152,7 @@ pub async fn providers_update(
     Ok(ProviderInfo::of(&provider, secrets::has_key(&provider.id)?))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn providers_remove(state: tauri::State<'_, AppState>, id: String) -> Result<(), String> {
     if id == OLLAMA_ID {
         return Err("The built-in Ollama entry cannot be removed.".to_string());
@@ -166,13 +166,13 @@ pub async fn providers_remove(state: tauri::State<'_, AppState>, id: String) -> 
     Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn provider_key_has(id: String) -> Result<bool, String> {
     secrets::has_key(&id)
 }
 
 /// Hit `GET {base}/models` with the stored key. Proves base URL + key work.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn providers_test(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -191,7 +191,7 @@ pub async fn providers_test(
 
 /// Model ids for one provider, for the picker. Ollama falls back to its
 /// native tag list when `/v1/models` is unavailable.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn provider_models(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -210,7 +210,7 @@ pub async fn provider_models(
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn ollama_status() -> OllamaStatus {
     roundtable_core::ollama_status().await
 }
@@ -219,7 +219,7 @@ pub async fn ollama_status() -> OllamaStatus {
 // Conversations + messages
 // ---------------------------------------------------------------------------
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversations_list(
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<Conversation>, String> {
@@ -228,7 +228,7 @@ pub async fn conversations_list(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversations_search(
     state: tauri::State<'_, AppState>,
     query: String,
@@ -238,7 +238,7 @@ pub async fn conversations_search(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversations_create(
     state: tauri::State<'_, AppState>,
     title: String,
@@ -252,7 +252,7 @@ pub async fn conversations_create(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversations_rename(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -263,7 +263,7 @@ pub async fn conversations_rename(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversations_delete(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -278,7 +278,7 @@ pub async fn conversations_delete(
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversation_get(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -288,7 +288,7 @@ pub async fn conversation_get(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversations_set_model(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -312,7 +312,7 @@ pub async fn conversations_set_model(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn messages_list(
     state: tauri::State<'_, AppState>,
     conversation_id: String,
@@ -596,7 +596,7 @@ fn auto_title(store: &roundtable_core::KbStore, conv: &Conversation, first_text:
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn chat_send(
     state: tauri::State<'_, AppState>,
     channel: Channel<StreamEvent>,
@@ -632,7 +632,7 @@ pub async fn chat_send(
     Ok(stream_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn chat_regenerate(
     state: tauri::State<'_, AppState>,
     channel: Channel<StreamEvent>,
@@ -671,7 +671,7 @@ pub async fn chat_regenerate(
     Ok(stream_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn chat_edit_resend(
     state: tauri::State<'_, AppState>,
     channel: Channel<StreamEvent>,
@@ -716,7 +716,7 @@ pub async fn chat_edit_resend(
     Ok(stream_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn chat_cancel(state: tauri::State<'_, AppState>, stream_id: String) -> Result<(), String> {
     if let Ok(streams) = state.streams.lock() {
         if let Some(flag) = streams.get(&stream_id) {
@@ -730,7 +730,7 @@ pub async fn chat_cancel(state: tauri::State<'_, AppState>, stream_id: String) -
 // Agents
 // ---------------------------------------------------------------------------
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_search(
     state: tauri::State<'_, AppState>,
     query: String,
@@ -741,7 +741,7 @@ pub async fn agents_search(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_get(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -751,7 +751,7 @@ pub async fn agents_get(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_create(
     state: tauri::State<'_, AppState>,
     draft: roundtable_core::NewAgent,
@@ -761,7 +761,7 @@ pub async fn agents_create(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_update(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -772,7 +772,7 @@ pub async fn agents_update(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_delete(state: tauri::State<'_, AppState>, id: String) -> Result<(), String> {
     if open_store(&state)?
         .delete_agent(&id)
@@ -784,7 +784,7 @@ pub async fn agents_delete(state: tauri::State<'_, AppState>, id: String) -> Res
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_duplicate(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -795,7 +795,7 @@ pub async fn agents_duplicate(
 }
 
 /// Export one agent as JSON (no keys involved — agents never hold secrets).
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_export(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -810,7 +810,7 @@ pub async fn agents_export(
 
 /// Import one agent from JSON. Gets a fresh id; provider links are kept as-is
 /// (a missing provider surfaces as an actionable error at chat time).
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_import(
     state: tauri::State<'_, AppState>,
     json: String,
@@ -823,13 +823,13 @@ pub async fn agents_import(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agent_templates() -> Vec<roundtable_core::AgentTemplate> {
     roundtable_core::agent_templates()
 }
 
 /// One-off test turn for a builder draft. Nothing is persisted.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agent_test(
     state: tauri::State<'_, AppState>,
     channel: Channel<StreamEvent>,
@@ -916,7 +916,7 @@ pub async fn agent_test(
     Ok(stream_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn conversations_set_agent(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -928,7 +928,7 @@ pub async fn conversations_set_agent(
 }
 
 /// The last model call of a conversation, for the Inspector.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn run_info(
     state: tauri::State<'_, AppState>,
     conversation_id: String,
@@ -978,7 +978,7 @@ fn room_run_snapshot(
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_list(
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<roundtable_core::rooms::Room>, String> {
@@ -987,7 +987,7 @@ pub async fn rooms_list(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_create(
     state: tauri::State<'_, AppState>,
     title: String,
@@ -1000,7 +1000,7 @@ pub async fn rooms_create(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_get(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -1010,7 +1010,7 @@ pub async fn rooms_get(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_update(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -1021,7 +1021,7 @@ pub async fn rooms_update(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_delete(state: tauri::State<'_, AppState>, id: String) -> Result<(), String> {
     if open_store(&state)?
         .delete_room(&id)
@@ -1033,7 +1033,7 @@ pub async fn rooms_delete(state: tauri::State<'_, AppState>, id: String) -> Resu
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_set_members(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -1044,7 +1044,7 @@ pub async fn rooms_set_members(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn room_messages_list(
     state: tauri::State<'_, AppState>,
     room_id: String,
@@ -1059,7 +1059,7 @@ pub async fn room_messages_list(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_start(
     state: tauri::State<'_, AppState>,
     channel: Channel<RoomEvent>,
@@ -1180,7 +1180,7 @@ pub(crate) fn resolve_room_creds(
     Ok(creds)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_pause(
     state: tauri::State<'_, AppState>,
     room_id: String,
@@ -1191,7 +1191,7 @@ pub async fn rooms_pause(
     room_run_snapshot(&open_store(&state)?, &room_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_resume(
     state: tauri::State<'_, AppState>,
     room_id: String,
@@ -1203,7 +1203,7 @@ pub async fn rooms_resume(
     room_run_snapshot(&open_store(&state)?, &room_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_step(
     state: tauri::State<'_, AppState>,
     room_id: String,
@@ -1219,7 +1219,7 @@ pub async fn rooms_step(
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_stop(
     state: tauri::State<'_, AppState>,
     room_id: String,
@@ -1253,7 +1253,7 @@ pub async fn rooms_stop(
     room_run_snapshot(&store, &room_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_run_state(
     state: tauri::State<'_, AppState>,
     room_id: String,
@@ -1261,7 +1261,7 @@ pub async fn rooms_run_state(
     room_run_snapshot(&open_store(&state)?, &room_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_set_protocol(
     state: tauri::State<'_, AppState>,
     agent_id: String,
@@ -1276,7 +1276,7 @@ pub async fn agents_set_protocol(
 // Phase 4: external tools, permissions, audit, remote
 // ---------------------------------------------------------------------------
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn mcp_servers(
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<roundtable_core::McpServer>, String> {
@@ -1285,7 +1285,7 @@ pub async fn mcp_servers(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn mcp_add_server(
     state: tauri::State<'_, AppState>,
     input: roundtable_core::NewMcpServer,
@@ -1295,7 +1295,7 @@ pub async fn mcp_add_server(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn mcp_remove_server(state: tauri::State<'_, AppState>, id: String) -> Result<(), String> {
     if open_store(&state)?
         .delete_mcp_server(&id)
@@ -1307,7 +1307,7 @@ pub async fn mcp_remove_server(state: tauri::State<'_, AppState>, id: String) ->
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn mcp_set_enabled(
     state: tauri::State<'_, AppState>,
     id: String,
@@ -1319,7 +1319,7 @@ pub async fn mcp_set_enabled(
 }
 
 /// Live tool listing for one server (spawns the server briefly).
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn mcp_tools(
     state: tauri::State<'_, AppState>,
     server_id: String,
@@ -1333,7 +1333,7 @@ pub async fn mcp_tools(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_tools(
     state: tauri::State<'_, AppState>,
     agent_id: String,
@@ -1345,7 +1345,7 @@ pub async fn agents_tools(
         .tools)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_set_tools(
     state: tauri::State<'_, AppState>,
     agent_id: String,
@@ -1380,7 +1380,7 @@ pub async fn agents_set_tools(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_permissions(
     state: tauri::State<'_, AppState>,
     agent_id: String,
@@ -1392,7 +1392,7 @@ pub async fn agents_permissions(
         .permissions)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn agents_set_permissions(
     state: tauri::State<'_, AppState>,
     agent_id: String,
@@ -1403,7 +1403,7 @@ pub async fn agents_set_permissions(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn workspace_dir(state: tauri::State<'_, AppState>) -> Result<Option<String>, String> {
     Ok(open_store(&state)?
         .get_setting("workspace.dir")
@@ -1411,7 +1411,7 @@ pub async fn workspace_dir(state: tauri::State<'_, AppState>) -> Result<Option<S
         .filter(|d| !d.trim().is_empty()))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn workspace_pick_dir(
     app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
@@ -1438,7 +1438,7 @@ pub async fn workspace_pick_dir(
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn workspace_clear_dir(state: tauri::State<'_, AppState>) -> Result<(), String> {
     open_store(&state)?
         .set_setting("workspace.dir", "")
@@ -1447,17 +1447,17 @@ pub async fn workspace_clear_dir(state: tauri::State<'_, AppState>) -> Result<()
 
 /// Web-search (Tavily-compatible) key. Empty clears it. Stored in the OS
 /// credential store, never returned to the webview.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn tools_set_search_key(key: String) -> Result<(), String> {
     secrets::set_web_search_key(key.trim())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn tools_search_key_has() -> Result<bool, String> {
     secrets::has_web_search_key()
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn audit_list(
     state: tauri::State<'_, AppState>,
     room_id: Option<String>,
@@ -1473,7 +1473,7 @@ pub async fn audit_list(
 
 /// Answer a pending tool approval. The decision is broadcast to every live
 /// driver; call ids are room-scoped so only the asking run can consume it.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn rooms_approve(
     state: tauri::State<'_, AppState>,
     call_id: String,
@@ -1539,13 +1539,13 @@ fn stop_remote_locked(state: &AppState) {
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_status(state: tauri::State<'_, AppState>) -> Result<RemoteStatus, String> {
     let store = open_store(&state)?;
     remote_status_of(&state, &store)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_start(
     state: tauri::State<'_, AppState>,
     bind: String,
@@ -1581,14 +1581,14 @@ pub async fn remote_start(
     remote_status_of(&state, &store)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_stop(state: tauri::State<'_, AppState>) -> Result<RemoteStatus, String> {
     stop_remote_locked(&state);
     let store = open_store(&state)?;
     remote_status_of(&state, &store)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_pairing_code(
     state: tauri::State<'_, AppState>,
 ) -> Result<HashMap<String, serde_json::Value>, String> {
@@ -1608,7 +1608,7 @@ pub async fn remote_pairing_code(
     ]))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_tokens(
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<roundtable_core::RemoteTokenInfo>, String> {
@@ -1617,7 +1617,7 @@ pub async fn remote_tokens(
         .map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_revoke(state: tauri::State<'_, AppState>, id: String) -> Result<(), String> {
     if open_store(&state)?
         .revoke_remote_token(&id)
@@ -1643,7 +1643,7 @@ fn remote_url_of(store: &roundtable_core::KbStore) -> Result<Option<String>, Str
         .filter(|u| !u.trim().is_empty()))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_client_status(
     state: tauri::State<'_, AppState>,
 ) -> Result<RemoteClientStatus, String> {
@@ -1659,7 +1659,7 @@ pub async fn remote_client_status(
 
 /// Pair with a desktop server: exchange a single-use code for a long-lived
 /// token, stored in the OS credential store. Nothing sensitive is logged.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_connect(
     state: tauri::State<'_, AppState>,
     url: String,
@@ -1716,7 +1716,7 @@ pub async fn remote_connect(
     Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn remote_disconnect(state: tauri::State<'_, AppState>) -> Result<(), String> {
     secrets::set_remote_token("")?;
     open_store(&state)?
@@ -1738,7 +1738,7 @@ const SETTING_KEYS: &[&str] = &[
     "remote.url",
 ];
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn settings_get(
     state: tauri::State<'_, AppState>,
 ) -> Result<HashMap<String, String>, String> {
@@ -1752,7 +1752,7 @@ pub async fn settings_get(
     Ok(map)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn settings_set(
     state: tauri::State<'_, AppState>,
     pairs: HashMap<String, String>,
@@ -1770,7 +1770,7 @@ pub async fn settings_set(
 }
 
 /// Full JSON snapshot (provider keys excluded — they stay in the OS store).
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn data_export(state: tauri::State<'_, AppState>) -> Result<String, String> {
     let bundle = open_store(&state)?
         .export_data()
@@ -1780,7 +1780,7 @@ pub async fn data_export(state: tauri::State<'_, AppState>) -> Result<String, St
 }
 
 /// Replace all local data with a snapshot. Returns a one-line summary.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn data_import(state: tauri::State<'_, AppState>, json: String) -> Result<String, String> {
     let bundle: roundtable_core::ExportBundle =
         serde_json::from_str(&json).map_err(|_| {
@@ -1796,13 +1796,13 @@ pub async fn data_import(state: tauri::State<'_, AppState>, json: String) -> Res
     ))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn data_dir(state: tauri::State<'_, AppState>) -> Result<String, String> {
     Ok(state.db_path.to_string_lossy().into_owned())
 }
 
 /// Reveal the data folder in the OS file manager.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn open_data_dir(state: tauri::State<'_, AppState>) -> Result<(), String> {
     let dir = state
         .db_path

@@ -51,6 +51,10 @@ export default function CommandPalette({
     setActiveIndex((i) => (i >= filtered.length ? 0 : i));
   }, [filtered.length]);
 
+  const safeIndex =
+    filtered.length === 0 ? 0 : Math.min(activeIndex, filtered.length - 1);
+  const activeId = filtered[safeIndex]?.id;
+
   const runCommand = (cmd: Command | undefined) => {
     if (!cmd) return;
     onClose();
@@ -68,7 +72,7 @@ export default function CommandPalette({
       );
     } else if (event.key === "Enter") {
       event.preventDefault();
-      runCommand(filtered[activeIndex]);
+      runCommand(filtered[safeIndex]);
     }
   };
 
@@ -89,7 +93,7 @@ export default function CommandPalette({
           aria-controls="palette-list"
           aria-autocomplete="list"
           aria-activedescendant={
-            filtered.length > 0 ? `palette-option-${filtered[activeIndex].id}` : undefined
+            filtered.length > 0 && activeId ? `palette-option-${activeId}` : undefined
           }
           aria-label="Command search"
         />
@@ -110,10 +114,10 @@ export default function CommandPalette({
             key={cmd.id}
             id={`palette-option-${cmd.id}`}
             role="option"
-            aria-selected={index === activeIndex}
+            aria-selected={index === safeIndex}
             className={
               "palette__option" +
-              (index === activeIndex ? " palette__option--active" : "")
+              (index === safeIndex ? " palette__option--active" : "")
             }
             onMouseEnter={() => setActiveIndex(index)}
             onClick={() => runCommand(cmd)}

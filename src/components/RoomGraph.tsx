@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { avatarTextColor } from "./AgentsPage";
 import type { Agent, RoomMember, RoomMessage } from "../lib/api";
 
 interface RoomGraphProps {
@@ -184,7 +185,7 @@ export default function RoomGraph({ messages, members, agentsById }: RoomGraphPr
               className={node.id === YOU_ID ? "room-graph__node room-graph__node--you" : "room-graph__node"}
               style={node.id === YOU_ID ? undefined : { fill: node.color }}
             />
-            <text x={node.x} y={node.y + 4} textAnchor="middle" className="room-graph__initial">
+            <text x={node.x} y={node.y + 4} textAnchor="middle" className="room-graph__initial" style={node.id === YOU_ID ? undefined : { fill: avatarTextColor(node.color) }}>
               {node.initial}
             </text>
             <text x={node.x} y={node.y + 30} textAnchor="middle" className="room-graph__label">
