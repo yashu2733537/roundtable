@@ -46,7 +46,7 @@ type Busy = "idle" | "save" | "test" | "data";
 /// different protocol and gets its own adapter + preset (not this list).
 const PRESETS: Array<{ name: string; base: string }> = [
   { name: "OpenAI", base: "https://api.openai.com/v1" },
-  { name: "Google", base: "https://generativelanguage.googleapis.com/v1beta/openai/" },
+  { name: "Google (Gemini)", base: "https://generativelanguage.googleapis.com/v1beta/openai" },
   { name: "DeepSeek", base: "https://api.deepseek.com/v1" },
   { name: "OpenRouter", base: "https://openrouter.ai/api/v1" },
   { name: "Together", base: "https://api.together.xyz/v1" },

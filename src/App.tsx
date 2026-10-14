@@ -594,6 +594,18 @@ export default function App() {
       .then(setOllama)
       .catch(() => undefined);
     void refreshAgents();
+    // Also refresh model lists for all providers
+    listProviders()
+      .then((providers) => {
+        Promise.allSettled(
+          providers.map((p) =>
+            providerModels(p.id).then((models) =>
+              setModelsByProvider((prev) => ({ ...prev, [p.id]: models })),
+            ),
+          ),
+        );
+      })
+      .catch(() => undefined);
     if (activeId) {
       getConversation(activeId)
         .then((conv) => {

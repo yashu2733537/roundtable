@@ -122,9 +122,71 @@ impl AgentTemplate {
     }
 }
 
-/// The six built-in roles, parsed from `agent_templates.json`.
+/// The built-in role presets, one markdown file each under
+/// `agent_templates/` (frontmatter + system-prompt body, validated at
+/// compile time by `build.rs`). Same struct as before, so the UI and shell
+/// are untouched.
 pub fn agent_templates() -> Vec<AgentTemplate> {
-    serde_json::from_str(include_str!("agent_templates.json")).unwrap_or_default()
+    const BUNDLE: &str = include_str!(concat!(env!("OUT_DIR"), "/agent_templates_bundle.txt"));
+    let mut templates = Vec::new();
+    for chunk in BUNDLE.split("@@@@TEMPLATE:") {
+        let chunk = chunk.trim_start_matches('\n');
+        if chunk.trim().is_empty() {
+            continue;
+        }
+        let Some((header, body)) = chunk.split_once("@@@@\n") else {
+            continue;
+        };
+        let _filename = header.trim();
+        if let Some(template) = parse_template(body) {
+            templates.push(template);
+        }
+    }
+    templates.sort_by(|a, b| a.name.cmp(&b.name));
+    templates
+}
+
+fn frontmatter_value<'a>(frontmatter: &'a str, key: &str) -> Option<String> {
+    frontmatter.lines().find_map(|line| {
+        let (name, value) = line.split_once(':')?;
+        if name.trim() == key {
+            let value = value.trim().trim_matches('"').to_string();
+            Some(value)
+        } else {
+            None
+        }
+    })
+}
+
+/// Parse one template file: `---` frontmatter, `---`, then the prompt.
+fn parse_template(text: &str) -> Option<AgentTemplate> {
+    let mut sections = text.splitn(3, "---");
+    sections.next()?; // leading empty (file starts with the fence)
+    let frontmatter = sections.next()?.trim();
+    let system_prompt = sections.next()?.trim().to_string();
+    if system_prompt.is_empty() {
+        return None;
+    }
+    let required = ["key", "name", "avatar_color", "avatar_icon", "role"];
+    let mut values: Vec<String> = Vec::new();
+    for key in required {
+        values.push(frontmatter_value(frontmatter, key).filter(|v| !v.is_empty())?);
+    }
+    Some(AgentTemplate {
+        key: values[0].clone(),
+        name: values[1].clone(),
+        avatar_color: values[2].clone(),
+        avatar_icon: values[3].clone(),
+        role: values[4].clone(),
+        system_prompt,
+        model: frontmatter_value(frontmatter, "model").unwrap_or_default(),
+        temperature: frontmatter_value(frontmatter, "temperature")
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(0.7),
+        max_tokens: frontmatter_value(frontmatter, "max_tokens")
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(2000),
+    })
 }
 
 fn is_hex_color(text: &str) -> bool {
@@ -230,9 +292,13 @@ mod tests {
     #[test]
     fn templates_parse_and_draft() {
         let templates = agent_templates();
-        assert_eq!(templates.len(), 13);
+        assert_eq!(templates.len(), 40);
+        let mut keys = std::collections::HashSet::new();
         for template in &templates {
+            assert!(keys.insert(template.key.clone()), "duplicate key: {}", template.key);
             assert!(!template.system_prompt.trim().is_empty());
+            assert!((0.0..=2.0).contains(&template.temperature));
+            assert!(template.max_tokens > 0);
             let draft = template.draft();
             assert_eq!(draft.name, template.name);
             assert!(draft.enabled);
