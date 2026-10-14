@@ -43,7 +43,7 @@ roundtable/
 
 - **Windows:** download the `.msi` (per-machine installer) or `-setup.exe`
   (NSIS) from the
-  [latest release](https://github.com/YOU/roundtable/releases/latest),
+  [latest release](https://github.com/yashu2733537/roundtable/releases/latest),
   run it, launch Roundtable from Start. Updates install in-app automatically.
 - **Linux:** download the `.AppImage` (`chmod +x`, run), or install the
   `.deb` with `sudo dpkg -i roundtable_*.deb`.

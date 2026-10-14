@@ -33,8 +33,8 @@ base64 -w0 ~/.android-release.jks  # → ANDROID_KEYSTORE_BASE64 (below)
 
 1. Bump `version` in `src-tauri/tauri.conf.json` (and `Cargo.toml`s if you
    keep them in sync), update the README phase checklist.
-2. Replace the updater `endpoints` placeholder (`YOU/roundtable`) with the
-   real repo if you forked.
+2. `version` in `src-tauri/tauri.conf.json` already points at this repo's
+   releases page; bump the version itself, update the README phase checklist.
 3. Tag and push: `git tag v0.2.0 && git push origin v0.2.0`.
 4. `.github/workflows/release.yml` builds Windows (MSI+NSIS), Linux
    (AppImage+deb), and Android (signed APK+AAB), then opens a **draft**

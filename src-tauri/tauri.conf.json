@@ -44,7 +44,7 @@
       "active": true,
       "dialog": true,
       "endpoints": [
-        "https://github.com/YOU/roundtable/releases/latest/download/latest.json"
+        "https://github.com/yashu2733537/roundtable/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY1MTIzNzEzRDU4NzQyMEUKUldRT1FvZlZFemNTWmN5UmtSRGJIMm5TYlRGTnJIZ00zcWdiVllEWVlHSFYyb2kzV2tFWDIwMlkK"
     }
