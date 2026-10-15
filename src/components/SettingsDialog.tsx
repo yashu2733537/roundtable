@@ -53,6 +53,8 @@ const PRESETS: Array<{ name: string; base: string }> = [
   { name: "Groq", base: "https://api.groq.com/openai/v1" },
   { name: "Mistral", base: "https://api.mistral.ai/v1" },
   { name: "xAI", base: "https://api.x.ai/v1" },
+  { name: "Qwen (Alibaba)", base: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1" },
+  { name: "Kimi (Moonshot)", base: "https://api.moonshot.ai/v1" },
 ];
 
 export default function SettingsDialog({
