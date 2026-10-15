@@ -1066,6 +1066,7 @@ pub async fn rooms_start(
     room_id: String,
     content: Option<String>,
     stream_id: String,
+    step_once: Option<bool>,
 ) -> Result<String, String> {
     let store = open_store(&state)?;
     // A finished driver leaves its registry entry behind; only a live run
@@ -1098,6 +1099,11 @@ pub async fn rooms_start(
         .filter(|t| !t.is_empty())
         .map(str::to_string);
     let control = Arc::new(RoomControl::default());
+    // Stepped starts arm the single-turn flag BEFORE the driver spawns, so
+    // the first turn pauses even if it finishes in milliseconds.
+    if step_once == Some(true) {
+        control.step_once.store(true, Ordering::Relaxed);
+    }
     state
         .room_controls
         .lock()
@@ -1826,6 +1832,13 @@ pub async fn open_data_dir(state: tauri::State<'_, AppState>) -> Result<(), Stri
     {
         let _ = dir;
         return Err("Opening the data folder is not supported on Android.".to_string());
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(dir)
+            .spawn()
+            .map_err(|e| format!("Could not open the data folder: {e}"))?;
     }
     Ok(())
 }

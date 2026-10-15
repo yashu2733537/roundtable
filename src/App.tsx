@@ -562,8 +562,8 @@ export default function App() {
     try {
       const models = await providerModels(providerId);
       setModelsByProvider((prev) => ({ ...prev, [providerId]: models }));
-    } catch {
-      // The picker keeps whatever it had; errors surface on send/test.
+    } catch (err: unknown) {
+      setStreamError(`Failed to load models: ${errorMessage(err)}`);
     } finally {
       setModelsLoading(false);
     }

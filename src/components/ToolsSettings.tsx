@@ -17,6 +17,46 @@ import {
 
 type Transport = "stdio" | "http";
 
+/**
+ * Shell-style arg splitting: whitespace separates, except inside single or
+ * double quotes (quotes are stripped, backslash escapes the next char).
+ * `--path "/my dir/x" -y` → ["--path", "/my dir/x", "-y"].
+ */
+function splitArgs(text: string): string[] {
+  const args: string[] = [];
+  let current = "";
+  let quote: string | null = null;
+  let started = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quote != null) {
+      if (ch === "\\" && i + 1 < text.length) {
+        current += text[i + 1];
+        i++;
+      } else if (ch === quote) {
+        quote = null;
+      } else {
+        current += ch;
+      }
+      started = true;
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+      started = true;
+    } else if (/\s/.test(ch)) {
+      if (started) {
+        args.push(current);
+        current = "";
+        started = false;
+      }
+    } else {
+      current += ch;
+      started = true;
+    }
+  }
+  if (started || current !== "") args.push(current);
+  return args;
+}
+
 export default function ToolsSettings() {
   const [dir, setDir] = useState<string | null>(null);
   const [dirLoading, setDirLoading] = useState(true);
@@ -193,10 +233,7 @@ export default function ToolsSettings() {
               name: trimmedName,
               transport,
               command: command.trim(),
-              args: argsText
-                .split(/\s+/)
-                .map((a) => a.trim())
-                .filter((a) => a !== ""),
+              args: splitArgs(argsText),
             })
           : await mcpAddServer({ name: trimmedName, transport, url: url.trim() });
       setServers((prev) => [...prev, created]);

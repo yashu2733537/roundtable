@@ -153,7 +153,7 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
 
   const mentionMatches = useMemo(() => {
     if (!mention) return [];
-    const query = mention.query.toLowerCase();
+    const query = mention.query.toLowerCase().trim();
     return mentionable.filter((a) => a.name.toLowerCase().includes(query)).slice(0, 6);
   }, [mention, mentionable]);
 
@@ -331,6 +331,9 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
           setActiveStream(null);
         }
         if (event.state.status === "done" || event.state.status === "stopped") {
+          // The run that asked is over — pending dialogs are moot (deciding
+          // now would only fail with "no longer pending").
+          setApprovals([]);
           listRoomMessages(roomId)
             .then((rows) => {
               if (selectedIdRef.current === roomId) setMessages(rows);
@@ -411,7 +414,7 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
 
   const detectMention = (text: string, cursor: number) => {
     const before = text.slice(0, cursor);
-    const match = /@([\w-]*)$/.exec(before);
+    const match = /@([\w-][\w\- ]*)$/.exec(before);
     if (!match) {
       setMention(null);
       return;
@@ -435,16 +438,18 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
     });
   };
 
-  /** First @Name in the text that matches an enabled member, if any. */
+  /** First @Name in the text matching an enabled member (backend parity:
+   * substring match, so multi-word names like "@Code Helper" work). */
   const mentionAgentId = (text: string): string | null => {
-    const pattern = /@([\w-]+)/g;
-    let match: RegExpExecArray | null;
-    while ((match = pattern.exec(text)) !== null) {
-      const name = match[1].toLowerCase();
-      const agent = mentionable.find((a) => a.name.toLowerCase() === name);
-      if (agent) return agent.id;
+    const lower = text.toLowerCase();
+    let best: { pos: number; id: string } | null = null;
+    for (const a of mentionable) {
+      const pos = lower.indexOf(`@${a.name.toLowerCase()}`);
+      if (pos >= 0 && (best == null || pos < best.pos)) {
+        best = { pos, id: a.id };
+      }
     }
-    return null;
+    return best?.id ?? null;
   };
 
   const running = runState?.status === "running";
@@ -534,13 +539,11 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
     setStreamError(null);
     try {
       if (runState == null || runState.status !== "paused") {
-        // Idle-first stepping: open the event channel, then arm one turn.
+        // Idle-first stepping: the flag is armed server-side before the
+        // driver spawns, so exactly one turn runs, then it pauses.
         const sid = newStreamId();
         setActiveStream(sid);
-        await startRoom(detail.room.id, null, sid, handleRoomEvent(detail.room.id));
-        const state = await stepRoom(detail.room.id);
-        setRunState(state);
-        setRunStates((prev) => ({ ...prev, [detail.room.id]: state }));
+        await startRoom(detail.room.id, null, sid, handleRoomEvent(detail.room.id), true);
       } else {
         const state = await stepRoom(detail.room.id);
         setRunState(state);
@@ -559,6 +562,7 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
       setRunState(state);
       setRunStates((prev) => ({ ...prev, [detail.room.id]: state }));
       setActiveStream(null);
+      setApprovals([]);
     } catch (err: unknown) {
       setStreamError(errorMessage(err));
     }
@@ -626,24 +630,30 @@ export default function RoomsView({ paneRef, onOpenPalette, onBack, onOpenInspec
           values.mode === "orchestrated" ? values.leadAgentId : null,
         );
         const id = created.room.id;
-        await updateRoom(id, {
-          title: values.title,
-          mode: values.mode,
-          lead_agent_id: values.mode === "orchestrated" ? values.leadAgentId : null,
-          max_turns: values.maxTurns,
-          token_budget: values.tokenBudget,
-          timeout_ms: values.timeoutSec * 1000,
-          loop_detection: values.loopDetection,
-        });
-        await setRoomMembers(
-          id,
-          values.memberIds.map((agent_id, seat) => ({
-            agent_id,
-            seat,
-            can_talk_to: values.allowlist[agent_id] ?? ["room"],
-          })),
-        );
-        await applyProtocols(values);
+        try {
+          await updateRoom(id, {
+            title: values.title,
+            mode: values.mode,
+            lead_agent_id: values.mode === "orchestrated" ? values.leadAgentId : null,
+            max_turns: values.maxTurns,
+            token_budget: values.tokenBudget,
+            timeout_ms: values.timeoutSec * 1000,
+            loop_detection: values.loopDetection,
+          });
+          await setRoomMembers(
+            id,
+            values.memberIds.map((agent_id, seat) => ({
+              agent_id,
+              seat,
+              can_talk_to: values.allowlist[agent_id] ?? ["room"],
+            })),
+          );
+          await applyProtocols(values);
+        } catch (err: unknown) {
+          // Roll the half-built room back so retrying creates exactly one.
+          await deleteRoom(id).catch(() => undefined);
+          throw err;
+        }
         setForm(null);
         await refreshRooms();
         await selectRoom(id);

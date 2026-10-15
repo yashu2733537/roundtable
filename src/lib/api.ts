@@ -513,9 +513,16 @@ export function startRoom(
   content: string | null,
   stream_id: string,
   onEvent: (event: RoomEvent) => void,
+  step_once?: boolean,
 ): Promise<string> {
   const channel = new Channel<RoomEvent>(onEvent);
-  return invoke<string>("rooms_start", { channel, room_id, content, stream_id });
+  return invoke<string>("rooms_start", {
+    channel,
+    room_id,
+    content,
+    stream_id,
+    step_once: step_once ?? null,
+  });
 }
 
 export function pauseRoom(room_id: string): Promise<RoomRunState> {

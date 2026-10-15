@@ -131,7 +131,7 @@ export default function ConversationPane({
 
   const mentionMatches = useMemo(() => {
     if (!mention) return [];
-    const query = mention.query.toLowerCase();
+    const query = mention.query.toLowerCase().trim();
     return enabledAgents.filter((a) => a.name.toLowerCase().includes(query)).slice(0, 6);
   }, [mention, enabledAgents]);
 
@@ -141,7 +141,7 @@ export default function ConversationPane({
 
   const detectMention = (text: string, cursor: number) => {
     const before = text.slice(0, cursor);
-    const match = /@([\w-]*)$/.exec(before);
+    const match = /@([\w-][\w\- ]*)$/.exec(before);
     if (!match) {
       setMention(null);
       return;
@@ -166,16 +166,18 @@ export default function ConversationPane({
     });
   };
 
-  /** First @Name in the composer that matches an enabled agent, if any. */
+  /** First @Name in the composer matching an enabled agent, if any.
+   * Substring match (backend parity) so "@Code Helper" works. */
   const mentionOverride = (): string | null => {
-    const pattern = /@([\w-]+)/g;
-    let match: RegExpExecArray | null;
-    while ((match = pattern.exec(composer)) !== null) {
-      const name = match[1].toLowerCase();
-      const agent = enabledAgents.find((a) => a.name.toLowerCase() === name);
-      if (agent) return agent.id;
+    const lower = composer.toLowerCase();
+    let best: { pos: number; id: string } | null = null;
+    for (const agent of enabledAgents) {
+      const pos = lower.indexOf(`@${agent.name.toLowerCase()}`);
+      if (pos >= 0 && (best == null || pos < best.pos)) {
+        best = { pos, id: agent.id };
+      }
     }
-    return null;
+    return best?.id ?? null;
   };
 
   const lastMessage = messages[messages.length - 1] ?? null;

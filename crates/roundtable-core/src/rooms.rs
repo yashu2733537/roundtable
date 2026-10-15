@@ -964,10 +964,23 @@ pub fn estimate_tokens(text: &str) -> i64 {
 }
 
 /// Does this provider error look like a function-calling refusal (unknown
-/// `tools` parameter)? Used for the auto → JSON fallback.
+/// `tools` parameter)? Used for the auto → JSON fallback. Deliberately
+/// narrow: it must mention tools AND read like a parameter refusal, so an
+/// unrelated 400 (bad key, too many tokens) never downgrades a healthy
+/// native agent.
 fn is_tools_error(message: &str) -> bool {
     let lower = message.to_lowercase();
-    lower.contains("tool") || lower.contains("unknown parameter") || lower.contains("400")
+    if !lower.contains("tool") {
+        return false;
+    }
+    lower.contains("unknown")
+        || lower.contains("unsupported")
+        || lower.contains("invalid")
+        || lower.contains("unrecognised")
+        || lower.contains("unrecognized")
+        || lower.contains("not supported")
+        || lower.contains("not allowed")
+        || (lower.contains("400") && lower.contains("parameter"))
 }
 
 /// Earliest `@Name` mention in `content` matching an enabled member
@@ -2652,6 +2665,9 @@ mod tests {
         assert!(is_tools_error("The endpoint refused the request (HTTP 400): Unknown parameter: tools"));
         assert!(is_tools_error("unknown parameter \"tool_choice\""));
         assert!(!is_tools_error("API key rejected (HTTP 401/403)"));
+        // Unrelated 400s must never downgrade a healthy native agent.
+        assert!(!is_tools_error("HTTP 400: max_tokens too large for this model"));
+        assert!(!is_tools_error("Bad request (400): malformed JSON body"));
     }
 
     #[test]

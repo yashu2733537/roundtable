@@ -444,12 +444,10 @@ fn start_run(
             return;
         }
     };
-    // Extras come from desktop settings (remote clients never send keys).
-    let web_search_key = store
-        .get_setting("tools.tavily_key")
-        .ok()
-        .flatten()
-        .filter(|k| !k.trim().is_empty());
+    // Extras come from the desktop environment (remote clients never send
+    // keys): the web-search key from the OS credential store — same source
+    // as local runs — and the workspace folder from settings.
+    let web_search_key = crate::secrets::web_search_key().ok().flatten();
     let workspace_dir = store
         .get_setting("workspace.dir")
         .ok()
