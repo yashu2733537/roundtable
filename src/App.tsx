@@ -11,6 +11,7 @@ import SettingsDialog from "./components/SettingsDialog";
 import { useTheme, type ThemeChoice } from "./lib/theme";
 import { errorMessage, fetchAppInfo } from "./lib/tauri";
 import {
+  OLLAMA_ID,
   cancelChat,
   createConversation,
   deleteConversation,
@@ -333,7 +334,25 @@ export default function App() {
   }, []);
 
   const handleNewChat = useCallback(async () => {
-    const conv = await createConversation("New chat", defaultProviderId, defaultModel);
+    // Never bind a ghost: if the saved default provider no longer exists
+    // (deleted, or from an older database), start unbound and heal the
+    // saved default so this stays fixed.
+    const defaultAlive =
+      defaultProviderId != null &&
+      (defaultProviderId === OLLAMA_ID ||
+        providers.some((p) => p.id === defaultProviderId));
+    const conv = await createConversation(
+      "New chat",
+      defaultAlive ? defaultProviderId : null,
+      defaultAlive ? defaultModel : "",
+    );
+    if (!defaultAlive && defaultProviderId != null) {
+      setDefaultProviderId(null);
+      setDefaultModel("");
+      setSettings({ "default.provider": "", "default.model": "" }).catch(
+        () => undefined,
+      );
+    }
     setConversations((prev) => [conv, ...prev]);
     setActiveId(conv.id);
     setComposer("");
@@ -341,7 +360,7 @@ export default function App() {
     setCenterView("chat");
     focusPane("conversation");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultProviderId, defaultModel]);
+  }, [defaultProviderId, defaultModel, providers]);
 
   const commands = useMemo<Command[]>(
     () => [

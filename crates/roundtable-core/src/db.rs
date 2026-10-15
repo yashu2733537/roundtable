@@ -500,6 +500,11 @@ impl KbStore {
                 [id],
             )
             .map_err(db_err)?;
+        // Agents fall back to "no provider" (an actionable error at chat
+        // time) instead of dangling at a ghost id.
+        self.conn
+            .execute("UPDATE agents SET provider_id = NULL WHERE provider_id = ?1", [id])
+            .map_err(db_err)?;
         Ok(removed > 0)
     }
 

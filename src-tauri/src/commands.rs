@@ -163,6 +163,14 @@ pub async fn providers_remove(state: tauri::State<'_, AppState>, id: String) -> 
     }
     // Best effort: the row is gone either way.
     let _ = secrets::set_key(&id, "");
+    // Heal the default: a stale default would bind every new chat to a
+    // ghost id ("provider is gone" on every send, no matter what you add).
+    if let Ok(Some(default)) = store.get_setting("default.provider") {
+        if default == id {
+            let _ = store.set_setting("default.provider", "");
+            let _ = store.set_setting("default.model", "");
+        }
+    }
     Ok(())
 }
 
